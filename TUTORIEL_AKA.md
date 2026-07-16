@@ -42,7 +42,9 @@ sauvegarde sur carte SD, multilingue et capture d'écran.
 - **ESP‑IDF v5.5+** installé et fonctionnel (`idf.py --version`).
 - **VS Code** avec l'extension ESP‑IDF (ou la ligne de commande).
 - La console **Gamebuino AKA** et son câble USB.
-- Le composant **`gamebuino`** (le HAL de la console) : le dossier `components/gamebuino/`
+- Le composant **`gamebuino`** (le HAL de la console: Hardware Abstraction Layer (ou Couche d'abstraction matérielle en français)).
+
+Pour faire simple : c'est le traducteur universel de votre console.) : le dossier `components/gamebuino/`
   qui fournit `gb_core`, `gb_graphics` et la couche bas niveau `gb_ll_*`
   (écran, boutons, joystick, audio, carte SD).
 
