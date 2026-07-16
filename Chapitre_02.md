@@ -52,3 +52,19 @@ mkdir build
 cd build
 cmake ..
 ninja
+Si tout fonctionne, vous êtes prêt pour le chapitre suivant.
+
+# 🧠 À retenir
+Le SDK AKA est moderne et bien structuré.
+
+La toolchain ESP32‑S3 est nécessaire.
+
+Vous pouvez déjà compiler un projet minimal.
+
+# 🚀 Pour aller plus loin
+Configurer VSCode pour la compilation automatique
+
+Installer les extensions C++
+
+# 🧭 Navigation
+[Chapitre précédent](Chapitre_01.md) | [Chapitre suivant](Chapitre_03.md)
