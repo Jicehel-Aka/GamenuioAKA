@@ -42,9 +42,7 @@ sauvegarde sur carte SD, multilingue et capture d'écran.
 - **ESP‑IDF v5.5+** installé et fonctionnel (`idf.py --version`).
 - **VS Code** avec l'extension ESP‑IDF (ou la ligne de commande).
 - La console **Gamebuino AKA** et son câble USB.
-- Le composant **`gamebuino`** (le HAL de la console: Hardware Abstraction Layer (ou Couche d'abstraction matérielle en français)).
-
-Pour faire simple : c'est le traducteur universel de votre console.) : le dossier `components/gamebuino/`
+- Le composant **`gamebuino`** (le HAL de la console) : le dossier `components/gamebuino/`
   qui fournit `gb_core`, `gb_graphics` et la couche bas niveau `gb_ll_*`
   (écran, boutons, joystick, audio, carte SD).
 
@@ -52,35 +50,81 @@ Pour faire simple : c'est le traducteur universel de votre console.) : le dossie
 
 ```
 mon_jeu/
-├── CMakeLists.txt              ← projet
-├── sdkconfig                   ← généré par idf.py
+├── CMakeLists.txt              ← décrit le PROJET entier
+├── sdkconfig                   ← configuration (généré par idf.py, ne pas éditer à la main)
 ├── components/
-│   └── gamebuino/              ← le HAL (fourni)
+│   └── gamebuino/              ← le HAL (fourni) = une bibliothèque réutilisable
 └── main/
-    ├── CMakeLists.txt          ← composant "main"
+    ├── CMakeLists.txt          ← décrit le composant "main" (notre code)
     └── app_main.cpp            ← notre code
 ```
 
-`CMakeLists.txt` (racine) :
+### D'abord : c'est quoi CMake, et pourquoi deux `CMakeLists.txt` ?
+
+**CMake** est l'outil qui **génère la recette de compilation** : quels fichiers
+compiler, dans quel ordre, en liant quelles bibliothèques. On ne compile jamais « à la
+main » avec `g++` sur ce genre de projet — c'est bien trop de fichiers. On **décrit**
+le projet dans des fichiers nommés `CMakeLists.txt`, et l'outil s'occupe du reste.
+
+ESP‑IDF ajoute sa propre couche par‑dessus CMake : le projet est découpé en
+**composants** (des mini‑bibliothèques indépendantes). Chaque composant a **son
+propre** `CMakeLists.txt`. D'où les deux fichiers :
+
+- celui de la **racine** décrit le **projet** dans son ensemble ;
+- celui de **`main/`** décrit **un composant** (ici, ton code de jeu).
+
+Le dossier `components/gamebuino/` est lui aussi un composant (avec son propre
+`CMakeLists.txt`, déjà fourni). C'est comme ça qu'on réutilise le HAL sans recopier son
+code.
+
+> 📖 Pour approfondir : [documentation officielle CMake](https://cmake.org/documentation/)
+> et surtout le [système de build ESP‑IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-guides/build-system.html)
+> (la notion de composant, `idf_component_register`, `REQUIRES`, etc.).
+
+### Le `CMakeLists.txt` de la racine (le projet)
 
 ```cmake
-cmake_minimum_required(VERSION 3.16)
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(mon_jeu)
+cmake_minimum_required(VERSION 3.16)                       # (1)
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)          # (2)
+project(mon_jeu)                                           # (3)
 ```
 
-`main/CMakeLists.txt` :
+Ligne par ligne :
+
+1. **`cmake_minimum_required(VERSION 3.16)`** — refuse de continuer si la version de
+   CMake installée est trop ancienne (garantit que la syntaxe utilisée est comprise).
+2. **`include(...project.cmake)`** — charge toute la « magie » ESP‑IDF (les fonctions
+   comme `idf_component_register`, la gestion des composants, la config `sdkconfig`…).
+   `$ENV{IDF_PATH}` pointe vers ton installation ESP‑IDF (défini par `export.sh`).
+3. **`project(mon_jeu)`** — déclare le projet et son **nom** (c'est aussi le nom du
+   binaire produit, `mon_jeu.bin`). Cette ligne doit venir **après** l'`include`.
+
+### Le `CMakeLists.txt` de `main/` (notre composant)
 
 ```cmake
-idf_component_register(
-    SRCS "app_main.cpp"
-    INCLUDE_DIRS "."
-    REQUIRES gamebuino          # ← le HAL. IMPORTANT : dans REQUIRES, pas INCLUDE_DIRS
+idf_component_register(                                    # (1)
+    SRCS "app_main.cpp"                                    # (2)
+    INCLUDE_DIRS "."                                       # (3)
+    REQUIRES gamebuino                                     # (4)
 )
 ```
 
-> ⚠️ **Piège classique** : `gamebuino` doit rester dans `REQUIRES`. Le mettre dans
-> `INCLUDE_DIRS` compile mais ne lie pas la librairie → erreurs d'édition de liens.
+1. **`idf_component_register(...)`** — la fonction ESP‑IDF qui **déclare un composant**.
+   Tout ce qui suit configure ce composant.
+2. **`SRCS`** — la **liste des fichiers à compiler**. Ici un seul (`app_main.cpp`) ;
+   plus tard on en ajoutera (`game.cpp`, `audio.cpp`…), séparés par des espaces ou des
+   retours à la ligne.
+3. **`INCLUDE_DIRS`** — les dossiers où le compilateur cherche les **en‑têtes** (`.h`)
+   de **ce** composant. `"."` = le dossier courant (`main/`), pour que
+   `#include "mon_fichier.h"` fonctionne.
+4. **`REQUIRES`** — la liste des **autres composants dont on dépend**. En mettant
+   `gamebuino` ici, notre code peut faire `#include "gb_core.h"` **et** être **lié** à
+   la bibliothèque du HAL.
+
+> ⚠️ **Piège classique** : `gamebuino` va dans **`REQUIRES`**, pas dans `INCLUDE_DIRS`.
+> `INCLUDE_DIRS` ne sert qu'à exposer les en‑têtes de *ton* composant. Mettre une
+> dépendance au mauvais endroit compile parfois (les `.h` sont trouvés) mais **échoue à
+> l'édition de liens** (`undefined reference to ...`), car la bibliothèque n'est pas liée.
 
 ### Compiler et flasher
 
