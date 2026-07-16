@@ -878,19 +878,4 @@ extensions naturelles :
 - **IA** (pour un Pong, un jeu de plateau…) : la faire tourner sur le **CPU 1** pour ne
   pas bousculer l'audio du **CPU 0**.
 
-### Les pièges à retenir (résumé)
-
-| Piège | Symptôme | Solution |
-|---|---|---|
-| `gamebuino` dans `INCLUDE_DIRS` | erreurs d'édition de liens | le mettre dans `REQUIRES` |
-| Double montage SD | « aucun score », sauvegarde KO | monter **une seule** fois (via `g_core.init`) |
-| Pool audio trop rare | sons quasi muets | tâche dédiée, `pool()` toutes les 2 ms |
-| Plus de 4 pistes audio | sons ignorés | 4 voix max, round‑robin |
-| Volume matériel oublié | sons faibles | `gb_ll_audio_set_volume(200)` |
-| Lancement sur niveau A | balle lancée sans être prêt | lancer sur **front** (`pressed`) |
-| Accents à l'écran | caractères cassés | textes **sans accent** (police ASCII) |
-| Noms de fichiers longs | échecs SD | noms **8.3** |
-| Incassables comptées en fin de niveau | niveau infini | ignorer `indestructible` |
-| Pas de temps variable | vitesse de balle qui fluctue | **limiteur de cadence** fixe |
-
 Bon code, et amuse‑toi bien sur la AKA ! 🎮
