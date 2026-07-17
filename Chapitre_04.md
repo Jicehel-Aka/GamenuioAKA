@@ -34,11 +34,11 @@ case contient **la couleur d'un pixel**.
 ```
       x →   0 . . . . . . . . . . . . . . . 319
    y  ┌───────────────────────────────────────┐
-   ↓  │ (0,0)                                  │   x : colonne (0 à gauche → 319 à droite)
-   0  │   •                                    │   y : ligne   (0 en haut  → 239 en bas)
-      │                                        │
-      │                (160,120) = centre •    │
-      │                                        │
+   ↓  │ (0,0)                                 │   x : colonne (0 à gauche → 319 à droite)
+   0  │   •                                   │   y : ligne   (0 en haut  → 239 en bas)
+      │                                       │
+      │                (160,120) = centre •   │
+      │                                       │
   239 │                                  (319,239)
       └───────────────────────────────────────┘
 ```
