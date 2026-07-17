@@ -52,6 +52,7 @@ mkdir build
 cd build
 cmake ..
 ninja
+```
 Si tout fonctionne, vous êtes prêt pour le chapitre suivant.
 
 # 🧠 À retenir
