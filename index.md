@@ -1,56 +1,60 @@
-# AKA Breakout — Tutoriel complet (22 chapitres + bonus)
+# Créer un jeu sur Gamebuino AKA — tutoriel pas à pas
 
-Bienvenue dans le tutoriel complet pour créer un casse‑briques professionnel sur la **Gamebuino AKA**.  
-Ce guide est structuré en **22 chapitres** + **1 chapitre bonus**, couvrant :
+Un tutoriel **pour débutant**, qui construit un jeu **de zéro** sur la Gamebuino AKA
+(ESP32-S3, écran 320×240, C++/ESP-IDF), une brique à la fois. Chaque chapitre est court
+et se termine par un programme **testable sur la console**.
 
-- architecture du jeu  
-- physique Arkanoid  
-- audio professionnel  
-- sauvegarde SD  
-- menus  
-- génération procédurale  
-- optimisation réelle  
-- particules, boss, shaders, sprites animés  
+On avance **par couches** : on comprend d'abord le principe « à la main » (le pixel, la
+collision, le rebond…), **puis** on utilise les fonctions toutes prêtes de la
+bibliothèque. Rien de « magique » : on sait toujours ce qui se passe en dessous.
 
----
-
-## 📚 Table des chapitres
-
-1. [Chapitre 01 — Introduction](Chapitre_01.md)  
-2. [Chapitre 02 — Installation du SDK](Chapitre_02.md)  
-3. [Chapitre 03 — Structure du projet](Chapitre_03.md)  
-4. [Chapitre 04 — Premier affichage](Chapitre_04.md)  
-5. [Chapitre 05 — Boucle de jeu](Chapitre_05.md)  
-6. [Chapitre 06 — Cadence et timing](Chapitre_06.md)  
-7. [Chapitre 07 — Lecture des entrées](Chapitre_07.md)  
-8. [Chapitre 08 — Raquette](Chapitre_08.md)  
-9. [Chapitre 09 — Balle](Chapitre_09.md)  
-10. [Chapitre 10 — Collision Arkanoid](Chapitre_10.md)  
-11. [Chapitre 11 — Briques](Chapitre_11.md)  
-12. [Chapitre 12 — Machine à états](Chapitre_12.md)  
-13. [Chapitre 13 — Audio](Chapitre_13.md)  
-14. [Chapitre 14 — Bonus](Chapitre_14.md)  
-15. [Chapitre 15 — Niveaux + incassables](Chapitre_15.md)  
-16. [Chapitre 16 — Génération procédurale](Chapitre_16.md)  
-17. [Chapitre 17 — Sauvegarde SD](Chapitre_17.md)  
-18. [Chapitre 18 — Texte & multilingue](Chapitre_18.md)  
-19. [Chapitre 19 — Menu Pause + Options](Chapitre_19.md)  
-20. [Chapitre 20 — Optimisations](Chapitre_20.md)  
-21. [Chapitre 21 — Assemblage final](Chapitre_21.md)  
-22. [Chapitre Bonus — Particules, Boss, Shaders, Sprites animés](Chapitre_bonus.md)
+> **Bibliothèque utilisée.** On s'appuie sur l'API **de haut niveau** de la lib AKA
+> (`gb_core`, `gb_graphics`, audio…), jamais sur les pilotes bas niveau `gb_ll_…`. Le
+> dossier `components/gamebuino` est une **brique externe** : on le prend **à jour** et
+> on ne le modifie pas. Dépôt : <https://github.com/jmp42/Gamebuino_AKA_lib>
 
 ---
 
-## 📦 Ressources
+## Table des chapitres
 
-- Code source : `/src`
-- Assets : `/assets`
-- Sauvegardes : `/saves`
-- Licence : MIT
+**Les fondations (débutant)**
+
+1. [Introduction](Chapitre_01.md) — le projet, la console, les deux couches d'outils
+2. [Installer l'environnement](Chapitre_02.md) — ESP-IDF, `idf.py`, build/flash/monitor
+3. [Structure du projet](Chapitre_03.md) — les `CMakeLists.txt` expliqués, le point d'entrée
+4. [Premier affichage](Chapitre_04.md) — **du pixel au sprite** : framebuffer, couleurs, lignes, rectangles, transparence
+5. [La boucle de jeu](Chapitre_05.md) — lire → mettre à jour → dessiner
+
+**Le moteur (débutant → intermédiaire)**
+
+6. [Cadence et timing](Chapitre_06.md) — une vitesse de jeu stable
+7. [Lire les entrées](Chapitre_07.md) — joystick, boutons, **maintien vs déclenchement**
+8. [La raquette](Chapitre_08.md) — la notion de `struct`, la primitive `Rect`, le *clamping*
+9. [La balle](Chapitre_09.md) — position, vitesse, rebonds sur les murs
+10. [Collision et rebond Arkanoid](Chapitre_10.md) — collision **générique**, rebond **progressif** (zones → % → sinus)
+
+**La suite (à venir)**
+
+11. Les briques — 12. *(option)* Machine à états — 13. Audio — 14. Bonus —
+15. Niveaux + incassables — 16. Génération procédurale — 17. Sauvegarde SD —
+18. Texte & multilingue — 19. Menu Pause + Options — 20. Optimisations —
+21. Assemblage final — Bonus : particules, sprites animés, etc.
+
+> ℹ️ La **machine à états** (chapitre 12) n'est **pas un prérequis** : c'est **une**
+> manière d'organiser les écrans (titre, jeu, game over) parmi d'autres. On la présente
+> comme une option pratique, pas comme un passage obligé.
 
 ---
 
-## 🧭 Navigation
+## Conventions du code
 
-Aucun chapitre précédent.  
-Chapitre suivant : [Chapitre 01](Chapitre_01.md)
+- Deux objets globaux : `gb_core gb;` (console) et `gb_graphics gfx;` (dessin).
+- Démarrage dans `extern "C" void app_main(void)`, `gb.init()` une seule fois.
+- Couleurs : prédéfinies (`color_white`…) ou `gfx.makeColor(r, g, b)`.
+- Textes **sans accent** (la police est ASCII).
+
+---
+
+## Licence
+
+Voir [LICENSE](LICENSE).

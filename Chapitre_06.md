@@ -1,74 +1,120 @@
-# Chapitre 06 — Cadence et timing  
-[Accueil](index.md) | [Chapitre précédent](Chapitre_05.md) | [Chapitre suivant](Chapitre_07.md)
+# Chapitre 06 — Cadence et timing
+
+[« Précédent](Chapitre_05.md) | [Accueil](index.md) | [Suivant »](Chapitre_07.md)
+
+![Niveau](https://img.shields.io/badge/Niveau-D%C3%A9butant-green)
 
 ---
 
-## 🏷️ Badges
-![status](https://img.shields.io/badge/AKA-Tutoriel-blue)
-![chapter](https://img.shields.io/badge/Chapitre-06-lightgrey)
-![level](https://img.shields.io/badge/Niveau-Intermédiaire-yellow)
+## Objectif
+
+Faire en sorte que **chaque image dure la même durée**, pour que le jeu avance à
+vitesse **constante**, quelle que soit la charge de calcul.
 
 ---
 
-## 📸 Illustration
-![timing](img/chap06_timing.png)
+## Le problème, concrètement
 
----
+Notre balle avancera d'un certain nombre de pixels **par image**. Si les images ne
+durent pas toutes pareil, la balle accélère et ralentit toute seule :
 
-# 📚 Table des matières
-- [Objectif](#objectif)
-- [Pourquoi une cadence fixe](#pourquoi-une-cadence-fixe)
-- [Calcul du temps de frame](#calcul-du-temps-de-frame)
-- [Limiteur de cadence](#limiteur-de-cadence)
-- [Cadence recommandée](#cadence-recommandée)
-- [À retenir](#à-retenir)
-- [Pour aller plus loin](#pour-aller-plus-loin)
-- [Navigation](#navigation)
-
----
-
-# 🎯 Objectif
-Garantir une cadence stable pour éviter les variations de vitesse et les micro‑lags.
-
----
-
-# 🕒 Pourquoi une cadence fixe ?
-Un jeu fluide doit :
-
-- mettre à jour la logique à intervalle constant  
-- dessiner à intervalle constant  
-- éviter les frames trop rapides ou trop lentes  
-
----
-
-# 🧮 Calcul du temps de frame
-```cpp
-uint32_t frame_start = esp_timer_get_time() / 1000;
+```
+Sans régulation :   |—5ms—||——12ms——||—6ms—||———14ms———|   → vitesse en dents de scie
+Avec régulation :   |———30ms———||———30ms———||———30ms———|   → vitesse constante
 ```
 
-# ⏱️ Limiteur de cadence
+On veut viser une **période fixe** par image. À 30 images/seconde, une image doit durer
+**1000 ms / 30 ≈ 33 ms**. On prendra une valeur ronde, `FRAME_MS = 30`.
+
+---
+
+## Mesurer le temps
+
+La lib donne l'heure courante en millisecondes avec `gb.get_millis()` (le nombre de ms
+écoulées depuis l'allumage). En notant l'heure au **début** de l'image et en la
+comparant à l'heure **après** le travail, on connaît la durée du travail :
+
 ```cpp
-uint32_t work = (esp_timer_get_time() / 1000) - frame_start;
-if (work < FRAME_MS)
-    vTaskDelay(pdMS_TO_TICKS(FRAME_MS - work));
+uint32_t debut = gb.get_millis();     // top chrono au début de l'image
+// ... lire / mettre à jour / dessiner ...
+uint32_t travail = gb.get_millis() - debut;   // combien de ms a pris cette image
 ```
 
-# 🎚️ Cadence recommandée
-30 FPS : idéal pour AKA
+---
 
-60 FPS : possible mais inutile pour un casse‑briques
+## Le régulateur de cadence
 
-# 🧠 À retenir
-Une cadence fixe = gameplay stable.
+Si le travail a pris **moins** que `FRAME_MS`, on **attend** le reste. S'il a pris plus
+(rare pour nous), on n'attend pas — on enchaîne.
 
-Le timing est essentiel pour la physique.
+```cpp
+constexpr uint32_t FRAME_MS = 30;     // ~33 images/seconde
 
-Le limiter évite les variations de vitesse.
+extern "C" void app_main(void)
+{
+    gb.init();
 
-# 🚀 Pour aller plus loin
-Ajouter un compteur FPS
+    while (true) {
+        uint32_t debut = gb.get_millis();
 
-Tester une cadence adaptative
+        // 1. LIRE  2. METTRE À JOUR  3. DESSINER
+        gb.pool();
+        // ... update ...
+        gfx.clear(color_black);
+        // ... dessins ...
+        gfx.update();
 
-# 🧭 Navigation
-[Chapitre précédent](Chapitre_05.md) | [Chapitre suivant](Chapitre_07.md)
+        // RÉGULATION : compléter l'image jusqu'à FRAME_MS
+        uint32_t travail = gb.get_millis() - debut;
+        if (travail < FRAME_MS)
+            gb.delay_ms(FRAME_MS - travail);   // on dort le temps qu'il reste
+    }
+}
+```
+
+```mermaid
+graph TD
+    A["top chrono : debut = get_millis()"] --> B["lire / update / dessiner"]
+    B --> C["travail = get_millis() - debut"]
+    C --> D{"travail < 30 ms ?"}
+    D -->|oui| E["delay_ms(30 - travail)"]
+    D -->|non| F["on enchaîne (pas d'attente)"]
+    E --> A
+    F --> A
+```
+
+**À tester :** l'affichage est régulier. Quand on ajoutera la balle (chapitre 9), sa
+vitesse sera stable. Si un jour le jeu te paraît trop rapide ou trop lent, c'est le
+**seul** chiffre à changer : augmente `FRAME_MS` pour ralentir.
+
+---
+
+## Pourquoi `gb.delay_ms` et pas une attente « à vide » ?
+
+On pourrait « tourner en rond » jusqu'à la bonne heure, mais ça garderait le processeur
+occupé pour rien (et chaufferait la batterie). `gb.delay_ms(...)` **rend la main** au
+système pendant l'attente : c'est plus propre et ça laisse respirer les autres tâches
+(l'audio, par exemple, qu'on ajoutera plus tard).
+
+---
+
+## Bonus : afficher les FPS
+
+La lib peut te donner la cadence réelle mesurée, pratique pour vérifier :
+
+```cpp
+gfx.printf("FPS: %.0f", gfx.get_fps());
+```
+
+---
+
+## À retenir
+
+- On vise une **période d'image constante** (`FRAME_MS`), pas « le plus vite possible ».
+- On **mesure** le travail avec `gb.get_millis()` et on **complète** avec
+  `gb.delay_ms(...)`.
+- Physique stable = **une seule** variable à régler : `FRAME_MS`.
+
+---
+
+[« Précédent](Chapitre_05.md) | [Accueil](index.md) | [Suivant » : Lire les entrées](Chapitre_07.md)
