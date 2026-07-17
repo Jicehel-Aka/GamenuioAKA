@@ -35,24 +35,27 @@ Afficher un premier élément à l’écran pour valider le pipeline graphique.
 ```cpp
 lcd_clear(color_black);
 lcd_refresh();
-🎨 Premier dessin
-cpp
+```
+
+# 🎨 Premier dessin
+```cpp
 gb_graphics.draw_rect(10, 10, 50, 50, color_white);
 lcd_refresh();
-🔁 Rafraîchissement
+```
+
+# 🔁 Rafraîchissement
 Le DMA envoie le framebuffer à l’écran automatiquement.
 
-🧠 À retenir
+# 🧠 À retenir
 Le rendu est simple et rapide.
 
 Le DMA optimise le transfert.
 
 Vous pouvez dessiner rectangles, textes, sprites.
 
-🚀 Pour aller plus loin
+# 🚀 Pour aller plus loin
 Tester plusieurs couleurs
-
 Dessiner du texte
 
-🧭 Navigation
+# 🧭 Navigation
 [Chapitre précédent](Chapitre_03.md) | [Chapitre suivant](Chapitre_05.md)
