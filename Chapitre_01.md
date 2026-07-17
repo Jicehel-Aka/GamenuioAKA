@@ -27,14 +27,17 @@ sauvegarder.
 
 ```
         Gamebuino AKA
- ┌───────────────────────────┐
- │  ┌─────────────────────┐  │   Écran : 320 x 240 pixels, couleur
- │  │                     │  │   Cerveau : puce ESP32-S3 (2 cœurs)
- │  │   écran 320 x 240   │  │   Langage : C++ (via ESP-IDF)
- │  │                     │  │   Entrées : joystick + boutons
- │  └─────────────────────┘  │   Stockage : carte micro-SD
- │   (joy)      A B  RUN MENU │   Son : haut-parleur intégré
- └───────────────────────────┘
+        
+                  USB   carte SD     
+ ┌───── L1 ──────────────────────── R1 ───┐
+ │   ^    ┌─────────────────────┐    D    │   Écran : 320 x 240 pixels, couleur
+ │ <   >  │                     │  C   B  │   Cerveau : puce ESP32-S3 (2 cœurs)
+ │   v    │   écran 320 x 240   │    A    │   Langage : C++ (via ESP-IDF)
+ │        │                     │   //    │   Entrées : joystick + boutons
+ │  (joy) └─────────────────────┘  ///    │   Stockage : carte micro-SD
+ │         RUN            MENU     //     │   Son : haut-parleur intégré
+ └────────────────────────────────────────┘
+       Connecteur extension    prise Jack
 ```
 
 Concrètement, programmer la AKA veut dire : **remplir une image de 320×240 pixels**,
