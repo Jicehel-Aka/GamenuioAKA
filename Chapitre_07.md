@@ -33,9 +33,17 @@ Après `gb.pool()`, l'objet `gb.buttons` répond à trois questions différentes
 ```cpp
 gb.pool();
 
-// "est-elle enfoncée MAINTENANT ?"  (vrai tant qu'on appuie)
-bool a_maintenu = gb.buttons.pressed(gb_buttons::KEY_A);   // ⚠️ voir note ci-dessous
+bool a_maintenu    = gb.buttons.state()   & gb_buttons::KEY_A;   // A est-il MAINTENU ?
+bool a_vient_appui = gb.buttons.pressed(gb_buttons::KEY_A);       // A vient-il d'être ENFONCÉ ?
 ```
+
+> 💡 **Le `&` (« et » bit à bit) et le masque de touches.** `gb.buttons.state()` ne
+> renvoie pas un seul bouton, mais **tous** d'un coup, empaquetés dans un nombre où
+> **chaque bit** représente une touche (1 = enfoncée, 0 = relâchée). `gb_buttons::KEY_A`
+> est justement le bit de la touche A. Le `&` (bit à bit) « éteint » tous les autres bits
+> et ne garde que celui de A : le résultat est non nul (donc « vrai ») **uniquement** si A
+> est enfoncée. C'est un **masque** : on isole une info au milieu des autres. (Voir le
+> [Chapitre 0](Chapitre_00.md) pour les bits.)
 
 En réalité la lib distingue trois notions. Le plus clair est d'utiliser les versions qui
 prennent une touche et renvoient un `bool` :
@@ -109,22 +117,47 @@ Pour ne pas réécrire tout ça partout, on range l'état lu dans une petite **s
 `Keys` (une structure = un paquet de variables regroupées sous un nom ; on détaille la
 notion au chapitre 8) :
 
+On la déclare **une fois pour toutes** avec tous les champs dont on aura besoin dans la
+suite du tutoriel (déplacement au maintien ; actions et navigation au front) :
+
 ```cpp
 struct Keys {
-    bool left, right;       // maintien (déplacement continu)
-    bool a_press;           // front (action unique)
-    int  jx, jy;            // joystick brut
+    // maintien (déplacement continu)
+    bool left, right, run, menu;
+    // fronts (actions / navigation de menu : une seule image)
+    bool a_press, b_press;
+    bool up_press, down_press, left_press, right_press;
+    // joystick brut
+    int  jx, jy;
 };
 
 void read_input(Keys& k) {
     gb.pool();                                   // LA lecture unique
-    k.left    = gb.buttons.state() & gb_buttons::KEY_LEFT;
-    k.right   = gb.buttons.state() & gb_buttons::KEY_RIGHT;
-    k.a_press = gb.buttons.pressed(gb_buttons::KEY_A);
+    uint16_t s = gb.buttons.state();             // l'état "maintenu" de toutes les touches
+
+    // maintien
+    k.left  = s & gb_buttons::KEY_LEFT;
+    k.right = s & gb_buttons::KEY_RIGHT;
+    k.run   = s & gb_buttons::KEY_RUN;           // servira au retour loader (ch. 21)
+    k.menu  = s & gb_buttons::KEY_MENU;          // servira au menu pause (ch. 19)
+
+    // fronts
+    k.a_press     = gb.buttons.pressed(gb_buttons::KEY_A);
+    k.b_press     = gb.buttons.pressed(gb_buttons::KEY_B);
+    k.up_press    = gb.buttons.pressed(gb_buttons::KEY_UP);
+    k.down_press  = gb.buttons.pressed(gb_buttons::KEY_DOWN);
+    k.left_press  = gb.buttons.pressed(gb_buttons::KEY_LEFT);
+    k.right_press = gb.buttons.pressed(gb_buttons::KEY_RIGHT);
+
+    // joystick
     k.jx = gb.joystick.get_x();
     k.jy = gb.joystick.get_y();
 }
 ```
+
+> On remplit `Keys` **en entier** dès maintenant, même si les premiers chapitres n'en
+> utilisent qu'une partie : ainsi le menu (ch. 19) et le retour au loader (ch. 21)
+> disposeront de `up_press`, `menu`, `run`… sans avoir à revenir modifier cette fonction.
 
 Le `Keys& k` (avec le `&`) veut dire « on te passe la **vraie** structure, pas une
 copie » : la fonction la remplit et l'appelant récupère les valeurs. (On reverra les

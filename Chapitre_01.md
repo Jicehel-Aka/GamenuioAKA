@@ -1,6 +1,6 @@
 # Chapitre 01 — Introduction
 
-[Accueil](index.md) | [Chapitre suivant »](Chapitre_02.md)
+[« Précédent](Chapitre_00.md) | [Accueil](index.md) | [Chapitre suivant »](Chapitre_02.md)
 
 ![Niveau](https://img.shields.io/badge/Niveau-D%C3%A9butant-green)
 
@@ -101,4 +101,4 @@ graph TD
 
 ---
 
-[Accueil](index.md) | [Chapitre suivant » : Installation](Chapitre_02.md)
+[« Précédent : Notions C++](Chapitre_00.md) | [Accueil](index.md) | [Chapitre suivant » : Installation](Chapitre_02.md)

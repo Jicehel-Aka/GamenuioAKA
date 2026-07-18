@@ -264,6 +264,11 @@ sprite. Comprendre le pixel, c'est comprendre tout le reste.
 > retourner (miroir) en parcourant les colonnes à l'envers, ou l'animer en changeant de
 > tableau à chaque frame. Ce sont des variations de cette **même** double boucle.
 
+> 🎨 **D'où vient ce tableau de pixels ?** Ici on l'a écrit à la main, mais en pratique on
+> **dessine** le sprite dans un éditeur, on l'exporte en PNG et on le **convertit** en
+> fichier `.h`. Tout le pipeline (avec un script prêt à l'emploi) est décrit dans
+> l'[Annexe A — Créer et convertir un sprite](Annexe_Sprites.md).
+
 ---
 
 ## 7. Rien ne s'affiche tant qu'on ne « présente » pas
